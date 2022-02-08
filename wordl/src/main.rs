@@ -6,7 +6,8 @@ extern crate lazy_static;
 use std::env;
 use std::fs::File;
 use std::io;
-use std::io::{stdin,stdout,Write};
+use std::path::Path;
+use std::io::{stdin,stdout,Read,BufRead,BufReader,Write};
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::collections::HashMap;
@@ -16,18 +17,12 @@ use lazy_static::lazy_static;
 // Rust can't create a static hashmap... Ah, yes, we need to use
 // lazy_static crate (lib)
 
-pub struct Constraints {
+struct Constraints {
 
 	locations: HashMap<char,u32>,
 	occurrences: HashSet<char>,
 }
 
-impl Constraints {
-	pub fn new(mut self) {
-		self.locations = HashMap::new();
-		self.occurrences = HashSet::new();
-	}
-}
 
 // english letter frequency (x100, i.e., 'a' occurs in 7.8%)
 lazy_static! {
@@ -101,6 +96,16 @@ fn read_dictionary(dictionary: &str) -> io::Result<()> {
    Ok(())
 }
 
+fn lines_from_file(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
+    BufReader::new(File::open(filename)?).lines().collect()
+}
+
+/*
+fn generate_guess<'a>( wordlist: Vec<String>, constraint: &'a Constraints) -> String {
+	
+	return wordlist[0];
+}
+*/
 
 fn main() {
    let args: Vec<String> = env::args().collect();
@@ -117,12 +122,25 @@ fn main() {
    
    let mut word_len = String::new();
    stdin().read_line(&mut word_len).expect("Did not enter a number [1-20]");
-   println!("You typed: {}",word_len);
+   println!("Word length: {}",word_len);
+   word_len.truncate(word_len.len()-1);
    
    let subdictname = word_len + ".txt";
-   let mut dict = OpenOptions::new().read(true).open(subdictname);
+   println!("Sub dictionary: {}", subdictname);
+
+   
+   // read the sub-dictionary into a wordlist
+   let wordlist = lines_from_file(subdictname);
+   println!("Loaded {} words to work with",wordlist.unwrap().len());
+   
+   
    
    // now we need some game logic to iterate through guesses
+   let mut constraints = Constraints {
+   		locations: HashMap::new(),
+		occurrences: HashSet::new()
+   };
+   
    
    
 }
