@@ -6,6 +6,7 @@ extern crate lazy_static;
 use std::env;
 use std::fs::File;
 use std::io;
+use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -72,7 +73,14 @@ fn read_dictionary(dictionary: &str) -> io::Result<()> {
 		let line = buf.trim_end();
 		let s_len = line.len();
 		println!("{} : {}",line,s_len);
+		let subdictionary = s_len.to_string() + ".txt";
+		let mut file = OpenOptions::new().create(true).write(true).append(true).open(subdictionary).unwrap();
+		if let Err(e) = write!(file,"{}",buf) {
+			eprintln!("Couldn't write to file: {}",e);
+		}
+		
 	 }
+	 
 	 buf.clear();
    }
    Ok(())
