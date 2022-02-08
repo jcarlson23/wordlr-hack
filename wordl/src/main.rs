@@ -6,6 +6,7 @@ extern crate lazy_static;
 use std::env;
 use std::fs::File;
 use std::io;
+use std::io::{stdin,stdout,Write};
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::collections::HashMap;
@@ -15,11 +16,25 @@ use lazy_static::lazy_static;
 // Rust can't create a static hashmap... Ah, yes, we need to use
 // lazy_static crate (lib)
 
+pub struct Constraints {
+
+	locations: HashMap<char,u32>,
+	occurrences: HashSet<char>,
+}
+
+impl Constraints {
+	pub fn new(mut self) {
+		self.locations = HashMap::new();
+		self.occurrences = HashSet::new();
+	}
+}
+
+// english letter frequency (x100, i.e., 'a' occurs in 7.8%)
 lazy_static! {
 	     static ref LETTERS: HashMap<char, u32> = { HashMap::from([
 	         ('a',780),
-		 ('b',200),
-		 ('c',400),
+		 	 ('b',200),
+		 	 ('c',400),
     		 ('d',380),
     		 ('e',1100),
     		 ('f',140),
@@ -35,7 +50,7 @@ lazy_static! {
     		 ('p',280),
     		 ('q',24),
     		 ('r',730),
-		 ('s',870),
+		 	 ('s',870),
     		 ('t',670),
     		 ('u',330),
     		 ('v',100),
@@ -86,10 +101,28 @@ fn read_dictionary(dictionary: &str) -> io::Result<()> {
    Ok(())
 }
 
+
 fn main() {
    let args: Vec<String> = env::args().collect();
-   let dictionary = &args[1];
    
-   let result = read_dictionary( &dictionary );
+   // if we are passed a dictionary, regenerate the sub-dicts
+   if args.len() > 1 {
+   	let dictionary = &args[1];
+   	let result = read_dictionary( &dictionary );
+   }
+   
+   // get the length of the word we're trying to guess.
+   print!("Enter the word length to guess: ");
+   let _=stdout().flush();
+   
+   let mut word_len = String::new();
+   stdin().read_line(&mut word_len).expect("Did not enter a number [1-20]");
+   println!("You typed: {}",word_len);
+   
+   let subdictname = word_len + ".txt";
+   let mut dict = OpenOptions::new().read(true).open(subdictname);
+   
+   // now we need some game logic to iterate through guesses
+   
    
 }
