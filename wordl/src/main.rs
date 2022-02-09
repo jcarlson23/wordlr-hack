@@ -19,7 +19,7 @@ use lazy_static::lazy_static;
 
 struct Constraints {
 
-	locations: HashMap<char,u32>,
+	locations: HashMap<char,usize>,
 	occurrences: HashSet<char>,
 }
 
@@ -96,16 +96,64 @@ fn read_dictionary(dictionary: &str) -> io::Result<()> {
    Ok(())
 }
 
+// grabbed utility function of the web
 fn lines_from_file(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
     BufReader::new(File::open(filename)?).lines().collect()
 }
 
-/*
-fn generate_guess<'a>( wordlist: Vec<String>, constraint: &'a Constraints) -> String {
+
+fn generate_guess<'a>( wordlist:Vec<String>, constraint:Constraints) -> String {
 	
-	return wordlist[0];
+	let mut for_consideration:HashSet<usize>= HashSet::new();
+	
+	// first filter the word list subject to the constraints
+	for (index, word) in wordlist.iter().enumerate() {
+		// first check that the word contains a given letter
+		for letter in word.chars() {
+			if constraint.occurrences.contains(&letter) {
+				for_consideration.insert(index.try_into().unwrap());
+			}
+		}
+		
+		// secondly, check a letter at a given position
+		let chrs = word.as_bytes();
+		for (&c,&i) in &constraint.locations {
+			let ch = c as u8;
+			if chrs[i] != ch {
+				continue
+			}
+		}
+		// it's passed our location
+		for_consideration.insert(index.try_into().unwrap());
+	}
+	
+	let mut high_score:u32 = 0;
+	let mut candidates:HashSet<usize> = HashSet::new();
+	
+	// ok, now we score our words for consideration
+	for cons in for_consideration {
+		let score = score_letter_frequency( &wordlist[cons] );
+		if score > high_score {
+			high_score = score;
+			candidates.clear();
+			candidates.insert(cons);
+		}
+		else if score == high_score {
+			candidates.insert(cons);
+		}
+	}
+	
+	let mut con = String::new();
+	
+	for c in candidates.drain() {
+		con = wordlist[c].clone();
+		return con;
+	}
+	
+	return con;
+	
 }
-*/
+
 
 fn main() {
    let args: Vec<String> = env::args().collect();
@@ -130,9 +178,8 @@ fn main() {
 
    
    // read the sub-dictionary into a wordlist
-   let wordlist = lines_from_file(subdictname);
-   println!("Loaded {} words to work with",wordlist.unwrap().len());
-   
+   let wordlist = lines_from_file(subdictname).unwrap();
+   println!("Loaded {} words to work with",wordlist.len());
    
    
    // now we need some game logic to iterate through guesses
@@ -141,6 +188,7 @@ fn main() {
 		occurrences: HashSet::new()
    };
    
-   
+   let guess = generate_guess( wordlist, constraints );
+   println!("Guess: {}",guess);
    
 }
