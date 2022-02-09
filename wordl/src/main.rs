@@ -7,15 +7,19 @@ use std::env;
 use std::fs::File;
 use std::io;
 use std::path::Path;
-use std::io::{stdin,stdout,Read,BufRead,BufReader,Write};
+use std::io::{stdin,stdout,BufRead,BufReader,Write};
 use std::fs::OpenOptions;
-use std::io::prelude::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use lazy_static::lazy_static;
 
 // Rust can't create a static hashmap... Ah, yes, we need to use
 // lazy_static crate (lib)
+
+struct IndexScore {
+	score:u32,
+	location:usize,
+}
 
 struct Constraints {
 
@@ -155,12 +159,31 @@ fn generate_guess<'a>( wordlist:&Vec<String>, constraint:&Constraints) -> String
 	
 	let mut high_score:u32 = 0;
 	let mut candidates:HashSet<usize> = HashSet::new();
+	let mut cands:Vec<IndexScore> = Vec::new();
 	
 	// ok, now we score our words for consideration
 	for cons in for_consideration {
 		let score = score_letter_frequency( &wordlist[cons] );
+		
+		let mut is = IndexScore {
+			score: score,
+			location: cons,
+		};
+		
+		cands.sort_by_key(|k| k.score );
+		
+		let mut high_score = 0;
+		
+		if cands.len() > 5 {
+			high_score = cands[0].score;
+			cands.remove(5);
+		}
+		
 		if score > high_score {
-			high_score = score;
+			is.score = score;
+			
+			cands.insert(0, is);
+			
 			candidates.clear();
 			candidates.insert(cons);
 		}
