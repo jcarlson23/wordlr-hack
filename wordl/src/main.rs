@@ -140,9 +140,15 @@ fn generate_guess<'a>( wordlist:&Vec<String>, constraint:&Constraints) -> String
 		for (&c,&i) in &constraint.locations {
 			let ch = c as u8;
 			if chrs[i] != ch {
+				exclusion_flag = true;
 				continue
 			}
 		}
+		
+		if exclusion_flag {
+			continue
+		}
+		
 		// it's passed our location
 		for_consideration.insert(index.try_into().unwrap());
 	}
