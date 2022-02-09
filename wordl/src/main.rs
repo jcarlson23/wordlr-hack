@@ -105,7 +105,7 @@ fn lines_from_file(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
 }
 
 
-fn generate_guess<'a>( wordlist:Vec<String>, constraint:Constraints) -> String {
+fn generate_guess<'a>( wordlist:&Vec<String>, constraint:&Constraints) -> String {
 	
 	let mut for_consideration:HashSet<usize>= HashSet::new();
 	
@@ -164,6 +164,38 @@ fn generate_guess<'a>( wordlist:Vec<String>, constraint:Constraints) -> String {
 	
 }
 
+fn guess_feedback(word:String) -> (HashMap<char,usize>,HashSet<char>,HashSet<char>) {
+	
+	println!("For each letter, enter\n (1) Not found \n(2) Found but we don't know where\n(3) Found at the given location\n");
+	let mut index:usize = 0;
+	
+	let mut locations = HashMap::new();
+	let mut occurrences = HashSet::new();
+	let mut excluded = HashSet::new();
+		
+	for ch in word.chars() {
+		println!("{}",ch);
+		let mut buffer = String::new();
+		io::stdin().read_line(&mut buffer);
+		let res = buffer.trim();
+		if res == "1" {
+			excluded.insert(ch);
+		}
+		else if res == "2" {
+			occurrences.insert(ch);
+		} 
+		else if res == "3" {
+			locations.insert(ch,index);
+		}
+		else {
+			println!("{} Not understood",res);
+		}
+		
+		index = index + 1;
+	}
+	
+	return (locations, occurrences, excluded);
+}
 
 fn main() {
    let args: Vec<String> = env::args().collect();
@@ -199,7 +231,20 @@ fn main() {
 		excluded: HashSet::new(),
    };
    
-   let guess = generate_guess( wordlist, constraints );
+   let guess = generate_guess( &wordlist, &constraints );
    println!("Guess: {}",guess);
+   
+   // now we need to get feedback
+   let (loc, occ, ex ) = guess_feedback(guess);
+   // add these to our constraints
+   
+   constraints.locations.extend(&loc);
+   constraints.occurrences.extend(&occ);
+   constraints.excluded.extend(&ex);
+   
+   
+   // time for another guess, for now I'll just leave this as hard-coded, we can loop it later on.
+   let second_geuss = generate_guess( &wordlist, &constraints );
+   
    
 }
