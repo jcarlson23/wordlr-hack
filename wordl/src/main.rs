@@ -21,6 +21,7 @@ struct Constraints {
 
 	locations: HashMap<char,usize>,
 	occurrences: HashSet<char>,
+	excluded: HashSet<char>,
 }
 
 
@@ -59,6 +60,7 @@ lazy_static! {
 
 fn score_letter_frequency(word: &str) -> u32 {
 
+// we always to maximize variation of letters
    let mut bag: HashSet<char> = HashSet::new();
    let mut total: u32 = 0;
    
@@ -66,6 +68,7 @@ fn score_letter_frequency(word: &str) -> u32 {
        if !bag.contains(&c) {
        	  if let val = LETTERS.get(&c) {
 	     total = total + val.unwrap();
+	     bag.insert(c); 
 	     }
 	  }
    }
@@ -106,8 +109,15 @@ fn generate_guess<'a>( wordlist:Vec<String>, constraint:Constraints) -> String {
 	
 	let mut for_consideration:HashSet<usize>= HashSet::new();
 	
+	// zeroth, if the word has any letters we've ruled out
 	// first filter the word list subject to the constraints
 	for (index, word) in wordlist.iter().enumerate() {
+	
+		for ex in &constraint.excluded {
+			if word.contains(&ex.to_string()) {
+				continue // the word is not a candidate
+			}
+		}
 		// first check that the word contains a given letter
 		for letter in word.chars() {
 			if constraint.occurrences.contains(&letter) {
@@ -185,7 +195,8 @@ fn main() {
    // now we need some game logic to iterate through guesses
    let mut constraints = Constraints {
    		locations: HashMap::new(),
-		occurrences: HashSet::new()
+		occurrences: HashSet::new(),
+		excluded: HashSet::new(),
    };
    
    let guess = generate_guess( wordlist, constraints );
