@@ -113,11 +113,21 @@ fn generate_guess<'a>( wordlist:&Vec<String>, constraint:&Constraints) -> String
 	// first filter the word list subject to the constraints
 	for (index, word) in wordlist.iter().enumerate() {
 	
+		let mut exclusion_flag = false;
+		
 		for ex in &constraint.excluded {
+			// println!("looking for {} in {}",ex,word);
 			if word.contains(&ex.to_string()) {
+				// println!("Excluding {}",word);
+				exclusion_flag = true;
 				continue // the word is not a candidate
 			}
 		}
+		
+		if exclusion_flag {
+			continue
+		}
+		
 		// first check that the word contains a given letter
 		for letter in word.chars() {
 			if constraint.occurrences.contains(&letter) {
@@ -174,7 +184,8 @@ fn guess_feedback(word:String) -> (HashMap<char,usize>,HashSet<char>,HashSet<cha
 	let mut excluded = HashSet::new();
 		
 	for ch in word.chars() {
-		println!("{}",ch);
+		println!("(1) Not found \n(2) Found but we don't know where\n(3) Found at the given location\n");
+		println!("Letter: {}",ch);
 		let mut buffer = String::new();
 		io::stdin().read_line(&mut buffer);
 		let res = buffer.trim();
@@ -231,20 +242,20 @@ fn main() {
 		excluded: HashSet::new(),
    };
    
-   let guess = generate_guess( &wordlist, &constraints );
-   println!("Guess: {}",guess);
+   for i in 0..4 {
+   		println!("* * * * ROUND {} * * * *",i);
+   		let guess = generate_guess( &wordlist, &constraints );
+	   	println!("Guess: {}",guess);
    
-   // now we need to get feedback
-   let (loc, occ, ex ) = guess_feedback(guess);
-   // add these to our constraints
+	   	// now we need to get feedback
+	   	let (loc, occ, ex ) = guess_feedback(guess);
+	   	// add these to our constraints
    
-   constraints.locations.extend(&loc);
-   constraints.occurrences.extend(&occ);
-   constraints.excluded.extend(&ex);
-   
-   
-   // time for another guess, for now I'll just leave this as hard-coded, we can loop it later on.
-   let second_geuss = generate_guess( &wordlist, &constraints );
+	   	constraints.locations.extend(&loc);
+	   	constraints.occurrences.extend(&occ);
+	   	constraints.excluded.extend(&ex);
+   }
+  
    
    
 }
