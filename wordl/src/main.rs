@@ -109,7 +109,7 @@ fn lines_from_file(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
 }
 
 
-fn generate_guess<'a>( wordlist:&Vec<String>, constraint:&Constraints) -> String {
+fn generate_guess<'a>( wordlist:&Vec<String>, constraint:&Constraints) -> Vec<String> {
 	
 	let mut for_consideration:HashSet<usize>= HashSet::new();
 	
@@ -176,7 +176,7 @@ fn generate_guess<'a>( wordlist:&Vec<String>, constraint:&Constraints) -> String
 		
 		if cands.len() > 5 {
 			high_score = cands[0].score;
-			cands.remove(5);
+			cands.remove(0);
 		}
 		
 		if score > high_score {
@@ -192,14 +192,23 @@ fn generate_guess<'a>( wordlist:&Vec<String>, constraint:&Constraints) -> String
 		}
 	}
 	
-	let mut con = String::new();
+	let mut guesslist: Vec<String> = Vec::new();
 	
-	for c in candidates.drain() {
-		con = wordlist[c].clone();
-		return con;
+	
+	
+	for c in cands {
+		
+		if c.location < wordlist.len() {
+			guesslist.insert(0,wordlist[c.location].clone());
+		}
+		else {
+			println!("Error creating guess list");
+		}
+		// con = wordlist[c].clone();
+		// return con;
 	}
 	
-	return con;
+	return guesslist;
 	
 }
 
@@ -273,9 +282,18 @@ fn main() {
    
    for i in 0..4 {
    		println!("* * * * ROUND {} * * * *",i);
-   		let guess = generate_guess( &wordlist, &constraints );
-	   	println!("Guess: {}",guess);
+   		let guesses = generate_guess( &wordlist, &constraints );
+   		for g in guesses {
+   			println!("Option: {}",g);
+   		}
+	   	
    
+   		// get what guess was used.
+   		println!("Enter the guess you used");
+   		let mut guess = String::new();
+   		stdin().read_line(&mut guess).expect("We need a guess");
+   		guess.pop();
+   		
 	   	// now we need to get feedback
 	   	let (loc, occ, ex ) = guess_feedback(guess);
 	   	// add these to our constraints
