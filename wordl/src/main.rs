@@ -31,35 +31,35 @@ struct Constraints {
 
 // english letter frequency (x100, i.e., 'a' occurs in 7.8%)
 lazy_static! {
-	     static ref LETTERS: HashMap<char, u32> = { HashMap::from([
-	         ('a',780),
-		 	 ('b',200),
-		 	 ('c',400),
-    		 ('d',380),
-    		 ('e',1100),
-    		 ('f',140),
-    		 ('g',300),
-    		 ('h',230),
-    		 ('i',820),
-    		 ('j',210),
-    		 ('k',250),
-    		 ('l',530),
-    		 ('m',270),
-    		 ('n',720),
-    		 ('o',610),
-    		 ('p',280),
-    		 ('q',24),
-    		 ('r',730),
-		 	 ('s',870),
-    		 ('t',670),
-    		 ('u',330),
-    		 ('v',100),
-    		 ('w',91),
-    		 ('x',27),
-    		 ('y',160),
-    		 ('z',44),
+static ref LETTERS: HashMap<char, u32> = { HashMap::from([
+	         ('A',780),
+		 	 ('B',200),
+		 	 ('C',400),
+    		 ('D',380),
+    		 ('E',1100),
+    		 ('F',140),
+    		 ('G',300),
+    		 ('H',230),
+    		 ('I',820),
+    		 ('J',210),
+    		 ('K',250),
+    		 ('L',530),
+    		 ('M',270),
+    		 ('N',720),
+    		 ('O',610),
+    		 ('P',280),
+    		 ('Q',24),
+    		 ('R',730),
+		 	 ('S',870),
+    		 ('T',670),
+    		 ('U',330),
+    		 ('V',100),
+    		 ('W',91),
+    		 ('X',27),
+    		 ('Y',160),
+    		 ('Z',44),
     		 ])
-		 };
+    	};
     }
 
 fn score_letter_frequency(word: &str) -> u32 {
@@ -132,13 +132,6 @@ fn generate_guess<'a>( wordlist:&Vec<String>, constraint:&Constraints) -> Vec<St
 			continue
 		}
 		
-		// first check that the word contains a given letter
-		for letter in word.chars() {
-			if constraint.occurrences.contains(&letter) {
-				for_consideration.insert(index.try_into().unwrap());
-			}
-		}
-		
 		// secondly, check a letter at a given position
 		let chrs = word.as_bytes();
 		for (&c,&i) in &constraint.locations {
@@ -151,10 +144,19 @@ fn generate_guess<'a>( wordlist:&Vec<String>, constraint:&Constraints) -> Vec<St
 		
 		if exclusion_flag {
 			continue
+		} else {
+			// it's passed our location
+			for_consideration.insert(index.try_into().unwrap());
 		}
 		
-		// it's passed our location
-		for_consideration.insert(index.try_into().unwrap());
+		// first check that the word contains a given letter
+		for letter in word.chars() {
+			if constraint.occurrences.contains(&letter) {
+				for_consideration.insert(index.try_into().unwrap());
+			}
+		}
+		
+		
 	}
 	
 	let mut high_score:u32 = 0;
@@ -214,7 +216,7 @@ fn generate_guess<'a>( wordlist:&Vec<String>, constraint:&Constraints) -> Vec<St
 
 fn guess_feedback(word:String) -> (HashMap<char,usize>,HashSet<char>,HashSet<char>) {
 	
-	println!("For each letter, enter\n (1) Not found \n(2) Found but we don't know where\n(3) Found at the given location\n");
+	println!("For each letter, enter\n(1) Not found \n(2) Found but we don't know where\n(3) Found at the given location\n");
 	let mut index:usize = 0;
 	
 	let mut locations = HashMap::new();
